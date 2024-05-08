@@ -28,6 +28,8 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [listToDelete, setListToDelete] = useState(null);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showDeleteAllConfirmation, setShowDeleteAllConfirmation] = useState(false);
+  const [showDeleteAllSuccessMessage, setShowDeleteAllSuccessMessage] = useState(false);
   const userId = localStorage.getItem("userId");
   const accessToken = localStorage.getItem("token");
   const modalRef = useRef();
@@ -118,6 +120,38 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
     }
   };
 
+
+  const confirmDeleteAll = async () => {
+    try {
+      const response = await axios.delete(
+        `http://localhost:8080/api/v1/task-list/delete-all-task-list/${userId}`,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("All task lists deleted successfully");
+        setTaskLists(taskLists.filter((list) => list.id !== listToDelete));
+        setListToDelete(null);
+        setShowDeleteAllConfirmation(false);
+        setShowDeleteAllSuccessMessage(true);
+        setTimeout(() => setShowDeleteAllSuccessMessage(false), 3000);
+      } else {
+        console.error("Failed to delete all task lists");
+      }
+    } catch (error) {
+      console.error("Error deleting all task lists:", error);
+    }
+  };
+
+
+  const handleDeleteAllTaskLists = (listId) => {
+    setListToDelete(listId);
+    setShowDeleteAllConfirmation(true);
+  };
+
+
   return (
     <div className="w-[225px]">
       <div className="bg-[#175CD3] h-screen overflow-y-auto">
@@ -161,18 +195,29 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
               )}
             </div>
           ))}
-        </div>
-        <div className="mt-[10px] w-[133px]  p-[10px 20px 10px 0px] gap-[10px] bg-[#FFFFFF] ml-8 rounded-xl text-[#175CD3]">
+          </div>
+          <div className="mt-[10px] w-[133px]  p-[10px 20px 10px 0px] gap-[10px] bg-[#FFFFFF] ml-8 rounded-xl text-[#175CD3]">
           <div className="flex gap-2 ml-2">
             <img src={Icon} alt="" className="w-[18px] h-[10px] mt-3" />
             <Link to="#" onClick={() => setModalOpen(true)} className="mt-2">
               New List
             </Link>
           </div>
+
+        
           <div className="flex gap-2 mt-[0.75rem] ml-2">
-            <img src={Delete} alt="" className="w-[14px] h-[18px]" />
-            <Link to="/dashboard">Delete List</Link>
+          <img src={Delete} alt="" className="w-[14px] h-[18px]" />
+          <Link to="#" onClick={handleDeleteAllTaskLists}>
+            Delete All List
+          </Link>
           </div>
+          {showSuccessMessage && (
+          <div className="absolute bottom-10 left-0 right-0 flex ml-[720px]">
+          </div>
+          )}
+          
+          
+
           <div className="flex gap-2 mt-[0.75rem] ml-2">
             <img src={CalendarIcon} alt="" className="w-[20px] h-[22px]" />
             <Link to="/scheduler">Calendar</Link>
@@ -246,6 +291,53 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
         </div>
       )}
 
+{showDeleteAllConfirmation && (
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#0000004d] bg-opacity-75 z-50">
+          <div className="bg-white rounded-lg w-[598px]">
+            <div className="bg-blue-700 h-[71px] text-white px-4 py-3 flex justify-between items-center rounded-t-[10px]">
+              <h3 className="text-[20px] ">Delete All Task Lists?</h3>
+              <button
+                onClick={() => setShowDeleteAllConfirmation(false)}
+                className="text-white"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="text-[#545860] px-4 py-6">
+              <p>Are you sure you want to delete all Task Lists?</p>
+              <div className="flex justify-between mt-4">
+                <button
+                  onClick={() => setShowDeleteAllConfirmation(false)}
+                  className="pl-[21rem]  bg-white text-[#175CD3] rounded-md"
+                >
+                  CANCEL
+                </button>
+                <button
+                  onClick={confirmDeleteAll}
+                  className="px-4 py-2 bg-red-500 text-white rounded-md mr-4"
+                >
+                  YES, DELETE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {showSuccessMessage && (
         <div className="absolute bottom-10 left-0 right-0 flex ml-[720px]">
           <div className="bg-blue-500 text-white py-2 px-4 rounded-md">
@@ -253,6 +345,15 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
           </div>
         </div>
       )}
+
+      {showDeleteAllSuccessMessage && (
+            <div className="absolute bottom-10 left-0 right-0 flex ml-[720px]">
+              <div className="bg-blue-500 text-white py-2 px-4 rounded-md">
+                All task lists deleted successfully!
+              </div>
+            </div>
+          )}
+
     </div>
   );
 };
