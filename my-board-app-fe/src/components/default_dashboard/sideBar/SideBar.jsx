@@ -291,7 +291,7 @@ const SideBar = ({ selectedListId, setSelectedListId, fetchTasks }) => {
         </div>
       )}
 
-{showDeleteAllConfirmation && (
+      {showDeleteAllConfirmation && (
         <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-[#0000004d] bg-opacity-75 z-50">
           <div className="bg-white rounded-lg w-[598px]">
             <div className="bg-blue-700 h-[71px] text-white px-4 py-3 flex justify-between items-center rounded-t-[10px]">
